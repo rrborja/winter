@@ -1,8 +1,15 @@
 language: go
 
+sudo: false
+
 go:
 - 1.x
 - tip
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - go: tip
 
 before_install:
 - go get golang.org/x/tools/cmd/cover
@@ -15,4 +22,4 @@ script:
 
 after_success:
 - gocovmerge *.out */*.cov > merged.coverage.out
-- $HOME/gopath/bin/goveralls -coverprofile=merged.coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+- $HOME/gopath/bin/goveralls -coverprofile=merged.coverage.out -service=travis-ci
