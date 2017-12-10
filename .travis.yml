@@ -6,8 +6,13 @@ go:
 
 before_install:
 - go get golang.org/x/tools/cmd/cover
+- go get github.com/wadey/gocovmerge
 - go get github.com/mattn/goveralls
 
 script:
 - go test . -v -covermode=count -coverprofile=coverage.out
-- $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+- go test ./metadata -v -covermode=count -coverprofile=metadata/coverage.out
+
+after_success:
+- gocovmerge *.out */*.cov > merged.coverage.out
+- $HOME/gopath/bin/goveralls -coverprofile=merged.coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
