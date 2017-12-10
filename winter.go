@@ -13,3 +13,18 @@
 // limitations under the License.
 
 package winter
+
+import (
+	"crypto/rsa"
+)
+
+type Store struct {
+	Security
+}
+
+type Security struct {
+	Key map[string]*rsa.PrivateKey
+}
+
+func Run() {
+}

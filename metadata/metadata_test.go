@@ -12,24 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package _test
+package metadata
 
 import (
-	"github.com/rrborja/winter/metadata"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestAnnotationWithDeclarator(t *testing.T) {
-	meta, _ := metadata.ParseMetadata(">GET /customers")
+	meta, _ := ParseMetadata(">GET /customers")
 	assert.NotNil(t, meta)
 }
 
 func TestAnnotationWithIdentifier(t *testing.T) {
-	meta, err := metadata.ParseMetadata(">                :ID")
+	meta, err := ParseMetadata(">                :ID")
 	defer assert.NoError(t, err)
 
-	variableInfo := meta.Info.(*metadata.VariableInfo)
+	variableInfo := meta.Info.(*VariableInfo)
 	identifier := variableInfo.Name
 
 	assert.Equal(t, "ID", identifier)
@@ -40,75 +39,75 @@ func TestExtractVariableInfo(t *testing.T) {
 }
 
 func TestMultiVariableInfo(t *testing.T) {
-	meta, err := metadata.ParseMetadata("> :name :address")
+	meta, err := ParseMetadata("> :name :address")
 	defer assert.NoError(t, err)
 
-	variableInfo := meta.Info.(*metadata.MultiVariableInfo)
-	assert.IsType(t, *variableInfo, metadata.MultiVariableInfo{})
+	variableInfo := meta.Info.(*MultiVariableInfo)
+	assert.IsType(t, *variableInfo, MultiVariableInfo{})
 }
 
 func TestBlankSingleVariable(t *testing.T) {
-	_, err := metadata.ParseMetadata("> :")
+	_, err := ParseMetadata("> :")
 	assert.EqualError(t, err, "Syntax error. Expected an identifier after ':'")
 }
 
 func TestLastBlankSingleMultiVariable(t *testing.T) {
-	_, err := metadata.ParseMetadata("> :phone :")
+	_, err := ParseMetadata("> :phone :")
 	assert.EqualError(t, err, "Syntax error. Expected an identifier after ':'")
 }
 
 func TestExpectHttpMethod(t *testing.T) {
-	_, err := metadata.ParseMetadata(">  customer/:id")
+	_, err := ParseMetadata(">  customer/:id")
 	assert.EqualError(t, err, "Expected an Http Method before a path")
 }
 
 func TestValidRouteSyntax(t *testing.T) {
-	_, err := metadata.ParseMetadata("> GET /customer/:id")
+	_, err := ParseMetadata("> GET /customer/:id")
 	assert.NoError(t, err)
 }
 
 func TestMetadataOfRoute(t *testing.T) {
-	meta, _ := metadata.ParseMetadata("> GET /customer")
-	assert.Equal(t, "/customer", meta.Info.(*metadata.RouteInfo).Path.String())
+	meta, _ := ParseMetadata("> GET /customer")
+	assert.Equal(t, "/customer", meta.Info.(*RouteInfo).Path.String())
 }
 
 func TestRouteParsedVariable(t *testing.T) {
-	meta, _ := metadata.ParseMetadata("> GET /customer/:id")
-	_, hasKey := meta.Info.(*metadata.RouteInfo).Mapping["id"]
+	meta, _ := ParseMetadata("> GET /customer/:id")
+	_, hasKey := meta.Info.(*RouteInfo).Mapping["id"]
 	assert.True(t, hasKey)
 }
 
 func TestRouteParsedGetHttpMethod(t *testing.T) {
-	meta, _ := metadata.ParseMetadata("> GET /customer/:id")
-	method := meta.Info.(*metadata.RouteInfo).Method
-	assert.Equal(t, metadata.Get{}, method)
+	meta, _ := ParseMetadata("> GET /customer/:id")
+	method := meta.Info.(*RouteInfo).Method
+	assert.Equal(t, Get{}, method)
 }
 
 func TestRouteParsedPostHttpMethod(t *testing.T) {
-	meta, _ := metadata.ParseMetadata("> POST /customer/:id")
-	method := meta.Info.(*metadata.RouteInfo).Method
-	assert.Equal(t, metadata.Post{}, method)
+	meta, _ := ParseMetadata("> POST /customer/:id")
+	method := meta.Info.(*RouteInfo).Method
+	assert.Equal(t, Post{}, method)
 }
 
 func TestRouteParsedPutHttpMethod(t *testing.T) {
-	meta, _ := metadata.ParseMetadata("> PUT /customer/:id")
-	method := meta.Info.(*metadata.RouteInfo).Method
-	assert.Equal(t, metadata.Put{}, method)
+	meta, _ := ParseMetadata("> PUT /customer/:id")
+	method := meta.Info.(*RouteInfo).Method
+	assert.Equal(t, Put{}, method)
 }
 
 func TestRouteParsedDeleteHttpMethod(t *testing.T) {
-	meta, _ := metadata.ParseMetadata("> DELETE /customer/:id")
-	method := meta.Info.(*metadata.RouteInfo).Method
-	assert.Equal(t, metadata.Delete{}, method)
+	meta, _ := ParseMetadata("> DELETE /customer/:id")
+	method := meta.Info.(*RouteInfo).Method
+	assert.Equal(t, Delete{}, method)
 }
 
 func TestRouteSyntaxWithQuery(t *testing.T) {
-	_, err := metadata.ParseMetadata("> GET /customer/:id ? :token :customized")
+	_, err := ParseMetadata("> GET /customer/:id ? :token :customized")
 	assert.NoError(t, err)
 }
 
 func TestRouteExtractionWithQuery(t *testing.T) {
-	meta, _ := metadata.ParseMetadata("> GET /customer/:id ? :token :customized")
-	queries := meta.Info.(*metadata.RouteInfo).Query
+	meta, _ := ParseMetadata("> GET /customer/:id ? :token :customized")
+	queries := meta.Info.(*RouteInfo).Query
 	assert.Equal(t, []string{"token", "customized"}, queries)
 }

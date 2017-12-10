@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package _test
+package metadata
 
 import (
 	//"github.com/stretchr/testify/assert"
 	"fmt"
-	"github.com/rrborja/winter/metadata"
-	"github.com/stretchr/testify/assert"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -39,8 +37,8 @@ type InterpreterMemory struct {
 
 type ControllerMethodDescriptor struct {
 	name          string
-	Info          *metadata.Metadata
-	Variables     map[string]*metadata.Metadata
+	Info          *Metadata
+	Variables     map[string]*Metadata
 	VariableTypes map[string]string
 }
 
@@ -62,7 +60,7 @@ func (mdr *InterpreterMemory) Interpret(n ast.Node) ast.Visitor {
 	case *ast.Comment:
 		if mdr.current.Info == nil {
 			var err error
-			mdr.current.Info, err = metadata.ParseMetadata(n.Text)
+			mdr.current.Info, err = ParseMetadata(n.Text)
 			if err != nil {
 				panic(err)
 			}
@@ -70,15 +68,15 @@ func (mdr *InterpreterMemory) Interpret(n ast.Node) ast.Visitor {
 	case *ast.FuncDecl:
 		method := new(ControllerMethodDescriptor)
 		method.name = n.Name.Name
-		method.Variables = make(map[string]*metadata.Metadata)
+		method.Variables = make(map[string]*Metadata)
 		mdr.current = method
 	case *ast.FuncType:
-		mdr.current.Variables = make(map[string]*metadata.Metadata, n.Params.NumFields())
+		mdr.current.Variables = make(map[string]*Metadata, n.Params.NumFields())
 		mdr.current.VariableTypes = make(map[string]string, n.Params.NumFields())
 		for _, f := range n.Params.List {
 			for _, name := range f.Names {
 				for _, decField := range mdr.fset.Filter(f) {
-					variable, err := metadata.ParseMetadata(decField[0].List[0].Text)
+					variable, err := ParseMetadata(decField[0].List[0].Text)
 					if err != nil {
 						panic(err)
 					} else {
@@ -113,17 +111,17 @@ func (mdr InterpreterMemory) String() string {
 		methodSignature := method.Info
 		variables := method.Variables
 
-		routeInfo := methodSignature.Info.(*metadata.RouteInfo)
+		routeInfo := methodSignature.Info.(*RouteInfo)
 		httpMethod := routeInfo.Method
 		httpPath := routeInfo.Path
 
-		methodInfo[i] = fmt.Sprintf("\tHandler:\t%s\n\t  Route:\t%s %s", method.name, metadata.ToStringOfHttpMethod(httpMethod), httpPath)
+		methodInfo[i] = fmt.Sprintf("\tHandler:\t%s\n\t  Route:\t%s %s", method.name, ToStringOfHttpMethod(httpMethod), httpPath)
 
 		vars[i] = make([]string, len(variables))
 
 		j := 0
 		for name, variable := range variables {
-			variableInfo := variable.Info.(*metadata.VariableInfo)
+			variableInfo := variable.Info.(*VariableInfo)
 			variableType := method.VariableTypes[name]
 			if j < 1 {
 				vars[i][j] = fmt.Sprintf("\tMapping:\t%s %s -> :%s", name, variableType, variableInfo.Name)
@@ -174,10 +172,10 @@ func TestParseComments(t *testing.T) {
 	mdr.fset = ast.NewCommentMap(fset, f, f.Comments)
 	mdr.stored = new(GoFileRegistry)
 
-	ast.Print(fset, f)
+	//ast.Print(fset, f)
 	ast.Walk(VisitorFunc(mdr.Interpret), f)
 
-	fmt.Println(mdr.String())
+	//fmt.Println(mdr.String())
 
-	assert.Fail(t, "none")
+	//assert.Fail(t, "none")
 }

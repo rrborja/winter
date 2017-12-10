@@ -15,6 +15,15 @@
 package winter
 
 type Context struct {
+	interceptors    []*Interceptor
+	validators      []*Validator
+	sessions        []*Session
+	responseFormats []*ResponseFormat
+	exceptions      []*Exception
+}
+
+type Exception interface {
+	error() error
 }
 
 type Controller interface {
